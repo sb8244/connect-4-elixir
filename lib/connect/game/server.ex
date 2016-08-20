@@ -37,7 +37,7 @@ defmodule Connect.Game.Server do
         case winner do
           nil -> {:reply, {:ok, new_state}, new_state}
           winner ->
-            {:reply, {:ok, :win, new_state}, new_state}
+            {:reply, {:ok, :win, winner, new_state}, new_state}
         end
       {:error, _} = err ->
         {:reply, err, state}

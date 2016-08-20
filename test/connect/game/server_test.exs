@@ -29,7 +29,7 @@ defmodule Connect.Game.ServerTest do
       Connect.Game.Server.make_move(game, 0)
       Connect.Game.Server.make_move(game, 1)
       Connect.Game.Server.make_move(game, 1)
-      assert Connect.Game.Server.make_move(game, 2) == {:ok, :win, %{turn: 5, board: [2, 2, nil, 1, 1, 1], rows: 2, columns: 3, win_size: 3}}
+      assert Connect.Game.Server.make_move(game, 2) == {:ok, :win, 1, %{turn: 5, board: [2, 2, nil, 1, 1, 1], rows: 2, columns: 3, win_size: 3}}
     end
 
     test "columns can become full and will error without affecting game state", %{game: game} do
