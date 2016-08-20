@@ -15,7 +15,7 @@ defmodule Connect.Game.Server do
 
   # Server Callbacks
   def init(%{rows: rows, columns: columns, win_size: win_size}) do
-    blank_board = Tuple.duplicate(nil, rows * columns)
+    blank_board = List.duplicate(nil, rows * columns)
     {:ok, %{board: blank_board, turn: 0, rows: rows, columns: columns, win_size: win_size}}
   end
 
@@ -28,11 +28,17 @@ defmodule Connect.Game.Server do
       {:ok, place_index} ->
         current_player = rem(state[:turn], 2) + 1
         new_state = Map.merge(state, %{
-          board: put_elem(state[:board], place_index, current_player),
+          board: List.replace_at(state[:board], place_index, current_player),
           turn: state[:turn] + 1
         })
 
-        {:reply, {:ok, new_state}, new_state}
+        winner = check_for_win_h(new_state)
+
+        case winner do
+          nil -> {:reply, {:ok, new_state}, new_state}
+          winner ->
+            {:reply, {:ok, :win, new_state}, new_state}
+        end
       {:error, _} = err ->
         {:reply, err, state}
     end
@@ -49,7 +55,7 @@ defmodule Connect.Game.Server do
   end
 
   defp find_placement_(state, current_index) when current_index >= 0 do
-    current_index_available = elem(state[:board], current_index) == nil
+    current_index_available = Enum.at(state[:board], current_index) == nil
 
     case current_index_available do
       true -> {:ok, current_index}
@@ -58,4 +64,31 @@ defmodule Connect.Game.Server do
         find_placement_(state, next_index)
     end
   end
+
+  defp check_for_win_h(state) do
+    rows = Enum.chunk(state[:board], state[:columns])
+    Enum.find_value(rows, fn(row) ->
+      possible_wins = Enum.chunk(row, state[:win_size], 1)
+      win = Enum.find(possible_wins, fn(combo) ->
+        dedup = Enum.dedup(combo)
+        dedup != [nil] && Enum.count(dedup) == 1
+      end)
+      case win do
+        nil -> false
+        _ -> Enum.at(win, 0)
+      end
+    end)
+  end
 end
+
+[
+  0, 1, 2, 3,
+  4, 5, 6, 7,
+  8, 9, 10, 11
+]
+
+[
+  1, 2, 1, 2,
+  2, 1, 2, 1,
+  1, 2, 2, 2
+]
