@@ -32,6 +32,24 @@ defmodule Connect.Game.ServerTest do
       assert Connect.Game.Server.make_move(game, 2) == {:ok, :win, 1, %{turn: 5, board: [2, 2, nil, 1, 1, 1], rows: 2, columns: 3, win_size: 3}}
     end
 
+    test "a vertical win returns a new message type", %{connect_4: game} do
+      Connect.Game.Server.make_move(game, 3)
+      Connect.Game.Server.make_move(game, 1)
+      Connect.Game.Server.make_move(game, 3)
+      Connect.Game.Server.make_move(game, 1)
+      Connect.Game.Server.make_move(game, 3)
+      Connect.Game.Server.make_move(game, 1)
+      assert {:ok, :win, 1, %{turn: 7, board: final_board, rows: 6, columns: 7, win_size: 4}} = Connect.Game.Server.make_move(game, 3)
+      assert final_board == [
+        nil, nil, nil, nil, nil, nil, nil,
+        nil, nil, nil, nil, nil, nil, nil,
+        nil, nil, nil, 1, nil, nil, nil,
+        nil, 2, nil, 1, nil, nil, nil,
+        nil, 2, nil, 1, nil, nil, nil,
+        nil, 2, nil, 1, nil, nil, nil,
+      ]
+    end
+
     test "columns can become full and will error without affecting game state", %{game: game} do
       assert Connect.Game.Server.make_move(game, 0) == {:ok, %{turn: 1, board: [nil, nil, nil, 1, nil, nil], rows: 2, columns: 3, win_size: 3}}
       assert Connect.Game.Server.make_move(game, 0) == {:ok, %{turn: 2, board: [2, nil, nil, 1, nil, nil], rows: 2, columns: 3, win_size: 3}}

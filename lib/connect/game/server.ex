@@ -32,7 +32,7 @@ defmodule Connect.Game.Server do
           turn: state[:turn] + 1
         })
 
-        winner = check_for_win_h(new_state)
+        winner = check_for_win_h(new_state) || check_for_win_v(new_state)
 
         case winner do
           nil -> {:reply, {:ok, new_state}, new_state}
@@ -66,9 +66,18 @@ defmodule Connect.Game.Server do
   end
 
   defp check_for_win_h(state) do
-    rows = Enum.chunk(state[:board], state[:columns])
-    Enum.find_value(rows, fn(row) ->
-      possible_wins = Enum.chunk(row, state[:win_size], 1)
+    rows = group_into_rows(state[:board], state[:columns])
+    find_win_in_sets(rows, state[:win_size])
+  end
+
+  defp check_for_win_v(state) do
+    cols = group_into_columns(state[:board], state[:columns])
+    find_win_in_sets(cols, state[:win_size])
+  end
+
+  defp find_win_in_sets(sets, win_size) do
+    Enum.find_value(sets, fn(set) ->
+      possible_wins = Enum.chunk(set, win_size, 1)
       win = Enum.find(possible_wins, fn(combo) ->
         dedup = Enum.dedup(combo)
         dedup != [nil] && Enum.count(dedup) == 1
@@ -78,6 +87,21 @@ defmodule Connect.Game.Server do
         _ -> Enum.at(win, 0)
       end
     end)
+  end
+
+  defp group_into_rows(board, col_size) do
+    Enum.chunk(board, col_size)
+  end
+
+  defp group_into_columns(board, col_size) do
+    indices = 0..Enum.count(board)-1
+    collected = Enum.reduce(indices, %{}, fn(index, collected) ->
+      grouping = rem(index, col_size)
+      grouping_list = collected[grouping] || []
+      new_grouping_list = grouping_list ++ [Enum.at(board, index)]
+      Map.put(collected, grouping, new_grouping_list)
+    end)
+    Map.values(collected)
   end
 end
 
