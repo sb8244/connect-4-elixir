@@ -5,20 +5,39 @@ defmodule Connect.Game.WinCheck do
     check_for_win_d(board, columns, win_size)
   end
 
-  # Helper methoder
+  # Helper methods
 
   @doc """
     Check for wins that happens in a horizontal row.
+
+    ## Examples
+
+        iex> Connect.Game.WinCheck.check_for_win_h([2, nil, 2, 1, 1, nil], 3, 2)
+        1
+
+        iex> Connect.Game.WinCheck.check_for_win_h([2, 2, 2, 1, 1, nil], 3, 3)
+        2
+
+        iex> Connect.Game.WinCheck.check_for_win_h([nil, nil, nil], 3, 1)
+        nil
   """
-  defp check_for_win_h(board, columns, win_size) do
+  def check_for_win_h(board, columns, win_size) do
     rows = group_into_rows(board, columns)
     find_win_in_sets(rows, win_size)
   end
 
   @doc """
     Check for wins that happens in a vertical column.
+
+    ## Examples
+
+        iex> Connect.Game.WinCheck.check_for_win_v([nil, 2, nil, 1, nil, 1], 2, 2)
+        1
+
+        iex> Connect.Game.WinCheck.check_for_win_v([nil, 1, nil, 2, nil, 1], 2, 2)
+        nil
   """
-  defp check_for_win_v(board, columns, win_size) do
+  def check_for_win_v(board, columns, win_size) do
     cols = group_into_columns(board, columns)
     find_win_in_sets(cols, win_size)
   end
@@ -26,8 +45,19 @@ defmodule Connect.Game.WinCheck do
   @doc """
     Check for wins that happens in 4 different diagonals.
     A win might be left-right-up left-right-down right-left-up right-left-down
+
+    ## Examples
+
+        iex> Connect.Game.WinCheck.check_for_win_d([nil, nil, 1, nil, 1, 2, 1, 2, 2], 3, 3)
+        1
+
+        iex> Connect.Game.WinCheck.check_for_win_d([2, nil, nil, 2], 2, 2)
+        2
+
+        iex> Connect.Game.WinCheck.check_for_win_d([2, nil, nil, 2], 2, 3)
+        nil
   """
-  defp check_for_win_d(board, columns, win_size) do
+  def check_for_win_d(board, columns, win_size) do
     diags = group_into_diags(board, columns)
     find_win_in_sets(diags, win_size)
   end
