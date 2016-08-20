@@ -76,7 +76,8 @@ defmodule Connect.Game.Server do
   end
 
   defp check_for_win_d(state) do
-
+    diags = group_into_diags(state[:board], state[:columns])
+    find_win_in_sets(diags, state[:win_size])
   end
 
   defp find_win_in_sets(sets, win_size) do
@@ -107,6 +108,38 @@ defmodule Connect.Game.Server do
     end)
     Map.values(collected)
   end
+
+  defp group_into_diags(board, col_size) do
+    indices = 0..Enum.count(board)-1
+    rows = group_into_rows(indices, col_size)
+    cols = group_into_columns(indices, col_size)
+
+    col_diags = Enum.reduce(hd(cols), [], fn(start_index, acc) ->
+      diag_indices = step_down_to_0([], start_index, col_size - 1, Enum.count(acc) + 1)
+      diag_values = Enum.map(diag_indices, fn(index) -> Enum.at(board, index) end)
+      [diag_values | acc]
+    end)
+
+    row_diags = Enum.reduce(Enum.at(rows, -1), [], fn(start_index, acc) ->
+      diag_indices = step_down_to_0([], start_index, col_size - 1, col_size - Enum.count(acc))
+      diag_values = Enum.map(diag_indices, fn(index) -> Enum.at(board, index) end)
+      [diag_values | acc]
+    end)
+
+    col_diags ++ row_diags
+  end
+
+  defp step_down_to_0(list, curr, _step, _max_length) when curr < 0 do
+    list
+  end
+
+  defp step_down_to_0(list, curr, step, max_length) do
+    cond do
+      Enum.count(list) == max_length -> list
+      Enum.count(list) < max_length ->
+        step_down_to_0([curr | list], curr - step, step, max_length)
+    end
+  end
 end
 
 _board = [
@@ -128,11 +161,6 @@ _board = [
   7,  8,  9,  10, 11, 12, 13,
   14, 15, 16, 17, 18, 19, 20,
   21, 22, 23, 24, 25, 26, 27,
-  28, 29, 30, 31, 32, 33, 34
-]
-
-
-[
-  [0], [1, 7], [2, 8, 14], [3, 9, 15, 21], [4, 10, 16, 22, 28], [5, 11, 17, 23, 29],
-  [6, 12, 18, 24, 30], [13, 19, 25, 31], [20, 26, 32], [27, 33], [34]
+  28, 29, 30, 31, 32, 33, 34,
+  35, 36, 37, 38, 39, 40, 41,
 ]
