@@ -13,6 +13,10 @@ defmodule Connect.Game.Server do
     GenServer.call(server, {:make_move, column})
   end
 
+  def check_winner(server) do
+    GenServer.call(server, {:check_winner})
+  end
+
   # Server Callbacks
   def init(%{rows: rows, columns: columns, win_size: win_size}) do
     blank_board = List.duplicate(nil, rows * columns)
@@ -23,6 +27,11 @@ defmodule Connect.Game.Server do
     {:reply, state, state}
   end
 
+  def handle_call({:priv_set_board, board}, _from, state) do
+    new_state = Map.merge(state, %{ board: board })
+    {:reply, {:ok, new_state}, new_state}
+  end
+
   def handle_call({:make_move, column}, _from, state) do
     case find_placement(state, column) do
       {:ok, place_index} ->
@@ -31,16 +40,19 @@ defmodule Connect.Game.Server do
           board: List.replace_at(state[:board], place_index, current_player),
           turn: state[:turn] + 1
         })
-
-        winner = check_for_win_h(new_state) || check_for_win_v(new_state) || check_for_win_d(new_state)
-
-        case winner do
-          nil -> {:reply, {:ok, new_state}, new_state}
-          winner ->
-            {:reply, {:ok, :win, winner, new_state}, new_state}
-        end
+        {:reply, {:ok, new_state}, new_state}
       {:error, _} = err ->
         {:reply, err, state}
+    end
+  end
+
+  def handle_call({:check_winner}, _from, state) do
+    winner = check_for_win_h(state) || check_for_win_v(state) || check_for_win_d(state)
+
+    case winner do
+      nil -> {:reply, {:ok, state}, state}
+      winner ->
+        {:reply, {:ok, :win, winner, state}, state}
     end
   end
 
@@ -114,19 +126,31 @@ defmodule Connect.Game.Server do
     rows = group_into_rows(indices, col_size)
     cols = group_into_columns(indices, col_size)
 
-    col_diags = Enum.reduce(hd(cols), [], fn(start_index, acc) ->
+    left_right_col_diags = Enum.reduce(hd(cols), [], fn(start_index, acc) ->
       diag_indices = step_down_to_0([], start_index, col_size - 1, Enum.count(acc) + 1)
       diag_values = Enum.map(diag_indices, fn(index) -> Enum.at(board, index) end)
       [diag_values | acc]
     end)
 
-    row_diags = Enum.reduce(Enum.at(rows, -1), [], fn(start_index, acc) ->
+    left_right_row_diags = Enum.reduce(Enum.at(rows, -1), [], fn(start_index, acc) ->
       diag_indices = step_down_to_0([], start_index, col_size - 1, col_size - Enum.count(acc))
       diag_values = Enum.map(diag_indices, fn(index) -> Enum.at(board, index) end)
       [diag_values | acc]
     end)
 
-    col_diags ++ row_diags
+    right_left_col_diags = Enum.reduce(Enum.at(cols, -1), [], fn(start_index, acc) ->
+      diag_indices = step_down_to_0([], start_index, col_size + 1, Enum.count(acc) + 1)
+      diag_values = Enum.map(diag_indices, fn(index) -> Enum.at(board, index) end)
+      [diag_values | acc]
+    end)
+
+    right_left_row_diags = Enum.reduce(Enum.at(rows, -1), [], fn(start_index, acc) ->
+      diag_indices = step_down_to_0([], start_index, col_size + 1, col_size - Enum.count(acc))
+      diag_values = Enum.map(diag_indices, fn(index) -> Enum.at(board, index) end)
+      [diag_values | acc]
+    end)
+
+    left_right_col_diags ++ left_right_row_diags ++ right_left_row_diags ++ right_left_col_diags
   end
 
   defp step_down_to_0(list, curr, _step, _max_length) when curr < 0 do
@@ -141,26 +165,3 @@ defmodule Connect.Game.Server do
     end
   end
 end
-
-_board = [
-  0, 1, 2, 3,
-  4, 5, 6, 7,
-  8, 9, 10, 11
-]
-
-[[0], [1, 4], [2, 5, 8], [3, 6, 9], [7, 10], [11]]
-
-[
-  1, 2, 1, 2,
-  2, 1, 2, 1,
-  1, 2, 2, 2
-]
-
-[
-  0,  1,  2,  3,  4,  5,  6,
-  7,  8,  9,  10, 11, 12, 13,
-  14, 15, 16, 17, 18, 19, 20,
-  21, 22, 23, 24, 25, 26, 27,
-  28, 29, 30, 31, 32, 33, 34,
-  35, 36, 37, 38, 39, 40, 41,
-]
