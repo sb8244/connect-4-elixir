@@ -32,7 +32,7 @@ defmodule Connect.Game.Server do
           turn: state[:turn] + 1
         })
 
-        winner = check_for_win_h(new_state) || check_for_win_v(new_state)
+        winner = check_for_win_h(new_state) || check_for_win_v(new_state) || check_for_win_d(new_state)
 
         case winner do
           nil -> {:reply, {:ok, new_state}, new_state}
@@ -75,6 +75,10 @@ defmodule Connect.Game.Server do
     find_win_in_sets(cols, state[:win_size])
   end
 
+  defp check_for_win_d(state) do
+
+  end
+
   defp find_win_in_sets(sets, win_size) do
     Enum.find_value(sets, fn(set) ->
       possible_wins = Enum.chunk(set, win_size, 1)
@@ -105,14 +109,30 @@ defmodule Connect.Game.Server do
   end
 end
 
-[
+_board = [
   0, 1, 2, 3,
   4, 5, 6, 7,
   8, 9, 10, 11
 ]
 
+[[0], [1, 4], [2, 5, 8], [3, 6, 9], [7, 10], [11]]
+
 [
   1, 2, 1, 2,
   2, 1, 2, 1,
   1, 2, 2, 2
+]
+
+[
+  0,  1,  2,  3,  4,  5,  6,
+  7,  8,  9,  10, 11, 12, 13,
+  14, 15, 16, 17, 18, 19, 20,
+  21, 22, 23, 24, 25, 26, 27,
+  28, 29, 30, 31, 32, 33, 34
+]
+
+
+[
+  [0], [1, 7], [2, 8, 14], [3, 9, 15, 21], [4, 10, 16, 22, 28], [5, 11, 17, 23, 29],
+  [6, 12, 18, 24, 30], [13, 19, 25, 31], [20, 26, 32], [27, 33], [34]
 ]
