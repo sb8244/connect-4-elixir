@@ -41,5 +41,27 @@ defmodule Connect.Game.Ai.Connect4Test do
       empty_scores = List.duplicate(nil, state[:columns])
       assert Connect.Game.Ai.Connect4.compute_move_scores(state, 1, 1, empty_scores) == [nil, 1]
     end
+
+    test "gives a large score to winning moves for player 1", context do
+      {:ok, game} = Connect.Game.Server.start_link(context.test, %{rows: 3, columns: 3, win_size: 3})
+      {:ok, state} = GenServer.call(game, {:priv_set_board, [
+        1, 2, nil,
+        2, 1, 1,
+        1, 2, 2
+      ]})
+      empty_scores = List.duplicate(nil, state[:columns])
+      assert Connect.Game.Ai.Connect4.compute_move_scores(state, 1, 1, empty_scores) == [nil, nil, 1000]
+    end
+
+    test "gives a low score to winning moves for player 2", context do
+      {:ok, game} = Connect.Game.Server.start_link(context.test, %{rows: 3, columns: 3, win_size: 3})
+      {:ok, state} = GenServer.call(game, {:priv_set_board, [
+        1, 2,   1,
+        2, nil, 1,
+        1, 2,   2
+      ]})
+      empty_scores = List.duplicate(nil, state[:columns])
+      assert Connect.Game.Ai.Connect4.compute_move_scores(state, 2, 1, empty_scores) == [nil, -1000, nil]
+    end
   end
 end

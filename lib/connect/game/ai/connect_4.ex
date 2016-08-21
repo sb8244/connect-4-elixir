@@ -19,7 +19,8 @@ defmodule Connect.Game.Ai.Connect4 do
     column_scores = Enum.reduce(columns, scores, fn(column_to_place, scores) ->
       case Connect.Game.ColumnPlacement.find_placement(state, column_to_place) do
         {:ok, place_index} ->
-          has_win = Connect.Game.WinCheck.check_winner(state[:board], state[:columns], state[:win_size])
+          next_board = List.replace_at(state[:board], place_index, player)
+          has_win = Connect.Game.WinCheck.check_winner(next_board, state[:columns], state[:win_size])
           score_modifier = if player == 1, do: 1000, else: -1000
           score_modifier = if has_win, do: score_modifier, else: div(score_modifier, 1000)
 
