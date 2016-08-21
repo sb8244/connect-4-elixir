@@ -2,6 +2,16 @@ defmodule Connect.Game.Ai.Connect4Test do
   use ExUnit.Case, async: true
 
   describe "get_placement" do
+    test "picks an opening move", context do
+      {:ok, game} = Connect.Game.Server.start_link(context.test, %{rows: 3, columns: 3, win_size: 3})
+      {:ok, state} = GenServer.call(game, {:priv_set_board, [
+        nil, nil, nil,
+        nil, nil, nil,
+        1, nil, nil
+      ]})
+      assert Connect.Game.Ai.Connect4.get_placement(state, 1) == {:ok, 0}
+    end
+
     test "it gives the only move on a nearly full board", context do
       {:ok, game} = Connect.Game.Server.start_link(context.test, %{rows: 2, columns: 2, win_size: 3})
       {:ok, state} = GenServer.call(game, {:priv_set_board, [
@@ -16,6 +26,16 @@ defmodule Connect.Game.Ai.Connect4Test do
       {:ok, state} = GenServer.call(game, {:priv_set_board, [
         2, nil,
         1, 2
+      ]})
+      assert Connect.Game.Ai.Connect4.get_placement(state, 1) == {:ok, 1}
+    end
+
+    test "prefers a 1-move win over a not winning move", context do
+      {:ok, game} = Connect.Game.Server.start_link(context.test, %{rows: 3, columns: 3, win_size: 3})
+      {:ok, state} = GenServer.call(game, {:priv_set_board, [
+        1, 2,   nil,
+        2, nil, 1,
+        1, 2,   2
       ]})
       assert Connect.Game.Ai.Connect4.get_placement(state, 1) == {:ok, 1}
     end
