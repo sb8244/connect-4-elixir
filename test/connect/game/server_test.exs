@@ -34,6 +34,10 @@ defmodule Connect.Game.ServerTest do
   end
 
   describe "call check_winner" do
+    test "without a win doesn't provide a :win", %{game: game} do
+      assert {:ok, _board} = Connect.Game.Server.check_winner(game)
+    end
+
     test "a horizontal win returns a new message type", %{game: game} do
       Connect.Game.Server.make_move(game, 0)
       Connect.Game.Server.make_move(game, 0)
