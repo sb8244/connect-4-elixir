@@ -1,24 +1,8 @@
-# Connect
+# Connect 4
 
-**TODO: Add description**
+Fun little challenge to create connect 4 in elixir. Goals of it are:
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
-  1. Add `connect` to your list of dependencies in `mix.exs`:
-
-    ```elixir
-    def deps do
-      [{:connect, "~> 0.1.0"}]
-    end
-    ```
-
-  2. Ensure `connect` is started before your application:
-
-    ```elixir
-    def application do
-      [applications: [:connect]]
-    end
-    ```
-
+- [x] Playable Connect 4 via CLI
+- [ ] Bonus: Playable Tic Tac Toe via ClI
+- [ ] Bonus: AI as player 2
+- [ ] Bonus: Web interface for games
