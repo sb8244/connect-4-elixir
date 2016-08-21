@@ -25,6 +25,12 @@ defmodule Connect.Game.ServerTest do
       assert Connect.Game.Server.make_move(game, 1) == {:ok, %{turn: 6, board: [1, 2, 1, 1, 2, 2], rows: 2, columns: 3, win_size: 3}}
     end
 
+
+    test "out of bound moves error out", %{game: game} do
+      assert Connect.Game.Server.make_move(game, 8) == {:error, :invalid_move}
+      assert Connect.Game.Server.make_move(game, -1) == {:error, :invalid_move}
+    end
+
     test "columns can become full and will error without affecting game state", %{game: game} do
       assert Connect.Game.Server.make_move(game, 0) == {:ok, %{turn: 1, board: [nil, nil, nil, 1, nil, nil], rows: 2, columns: 3, win_size: 3}}
       assert Connect.Game.Server.make_move(game, 0) == {:ok, %{turn: 2, board: [2, nil, nil, 1, nil, nil], rows: 2, columns: 3, win_size: 3}}

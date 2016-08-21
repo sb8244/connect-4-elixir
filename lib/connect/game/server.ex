@@ -37,16 +37,21 @@ defmodule Connect.Game.Server do
   end
 
   def handle_call({:make_move, column}, _from, state) do
-    case find_placement(state, column) do
-      {:ok, place_index} ->
-        current_player = rem(state[:turn], 2) + 1
-        new_state = Map.merge(state, %{
-          board: List.replace_at(state[:board], place_index, current_player),
-          turn: state[:turn] + 1
-        })
-        {:reply, {:ok, new_state}, new_state}
-      {:error, _} = err ->
-        {:reply, err, state}
+    cond do
+      column >= 0 && column < state[:columns] ->
+        case find_placement(state, column) do
+          {:ok, place_index} ->
+            current_player = rem(state[:turn], 2) + 1
+            new_state = Map.merge(state, %{
+              board: List.replace_at(state[:board], place_index, current_player),
+              turn: state[:turn] + 1
+            })
+            {:reply, {:ok, new_state}, new_state}
+          {:error, _} = err ->
+            {:reply, err, state}
+        end
+      true ->
+        {:reply, {:error, :invalid_move}, state}
     end
   end
 
