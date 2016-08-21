@@ -15,7 +15,7 @@ defmodule Connect.Game.ServerTest do
     end
   end
 
-  describe "call make_move" do
+  describe "call make_move/2" do
     test "valid moves affect the state", %{game: game} do
       assert Connect.Game.Server.make_move(game, 0) == {:ok, %{turn: 1, board: [nil, nil, nil, 1, nil, nil], rows: 2, columns: 3, win_size: 3}}
       assert Connect.Game.Server.make_move(game, 1) == {:ok, %{turn: 2, board: [nil, nil, nil, 1, 2, nil], rows: 2, columns: 3, win_size: 3}}
@@ -30,6 +30,26 @@ defmodule Connect.Game.ServerTest do
       assert Connect.Game.Server.make_move(game, 0) == {:ok, %{turn: 2, board: [2, nil, nil, 1, nil, nil], rows: 2, columns: 3, win_size: 3}}
       assert Connect.Game.Server.make_move(game, 0) == {:error, :column_full}
       assert Connect.Game.Server.get_state(game) == %{turn: 2, board: [2, nil, nil, 1, nil, nil], rows: 2, columns: 3, win_size: 3}
+    end
+  end
+
+  describe "call make_move/3" do
+    test "valid moves affect the state", %{game: game} do
+      assert Connect.Game.Server.make_move(game, 0, 0) == {:ok, %{turn: 1, board: [1, nil, nil,
+                                                                                   nil, nil, nil], rows: 2, columns: 3, win_size: 3}}
+      assert Connect.Game.Server.make_move(game, 1, 2) == {:ok, %{turn: 2, board: [1, nil, nil,
+                                                                                   nil, nil, 2], rows: 2, columns: 3, win_size: 3}}
+    end
+
+    test "out of bound moves error out", %{game: game} do
+      assert Connect.Game.Server.make_move(game, 3, 3) == {:error, :invalid_move}
+      assert Connect.Game.Server.make_move(game, -1, 3) == {:error, :invalid_move}
+    end
+
+    test "already placed moves error out", %{game: game} do
+      assert Connect.Game.Server.make_move(game, 0, 0) == {:ok, %{turn: 1, board: [1, nil, nil,
+                                                                                   nil, nil, nil], rows: 2, columns: 3, win_size: 3}}
+      assert Connect.Game.Server.make_move(game, 0, 0) == {:error, :invalid_move}
     end
   end
 

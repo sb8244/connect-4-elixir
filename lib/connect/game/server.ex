@@ -13,6 +13,10 @@ defmodule Connect.Game.Server do
     GenServer.call(server, {:make_move, column})
   end
 
+  def make_move(server, row, column) do
+    GenServer.call(server, {:place_piece, row, column})
+  end
+
   def check_winner(server) do
     GenServer.call(server, {:check_winner})
   end
@@ -43,6 +47,27 @@ defmodule Connect.Game.Server do
         {:reply, {:ok, new_state}, new_state}
       {:error, _} = err ->
         {:reply, err, state}
+    end
+  end
+
+  def handle_call({:place_piece, row, column}, _from, state) do
+    cond do
+      row >= 0 && row < state[:rows] && column >= 0 && column < state[:columns] ->
+        place_index = row * state[:columns] + column
+
+        case Enum.at(state[:board], place_index) do
+          nil ->
+            current_player = rem(state[:turn], 2) + 1
+            new_state = Map.merge(state, %{
+              board: List.replace_at(state[:board], place_index, current_player),
+              turn: state[:turn] + 1
+            })
+            {:reply, {:ok, new_state}, new_state}
+          _ ->
+            {:reply, {:error, :invalid_move}, state}
+        end
+      true ->
+        {:reply, {:error, :invalid_move}, state}
     end
   end
 
