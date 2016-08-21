@@ -39,7 +39,7 @@ defmodule Connect.Game.Server do
   def handle_call({:make_move, column}, _from, state) do
     cond do
       column >= 0 && column < state[:columns] ->
-        case find_placement(state, column) do
+        case Connect.Game.ColumnPlacement.find_placement(state, column) do
           {:ok, place_index} ->
             current_player = rem(state[:turn], 2) + 1
             new_state = Map.merge(state, %{
@@ -83,27 +83,6 @@ defmodule Connect.Game.Server do
       nil -> {:reply, {:ok, state}, state}
       winner ->
         {:reply, {:ok, :win, winner, state}, state}
-    end
-  end
-
-  defp find_placement(state, drop_column) do
-    max_index = state[:rows] * state[:columns] - 1
-    col_offset = state[:columns] - drop_column - 1
-    find_placement_(state, max_index - col_offset)
-  end
-
-  defp find_placement_(_state, current_index) when current_index < 0 do
-    {:error, :column_full}
-  end
-
-  defp find_placement_(state, current_index) when current_index >= 0 do
-    current_index_available = Enum.at(state[:board], current_index) == nil
-
-    case current_index_available do
-      true -> {:ok, current_index}
-      false ->
-        next_index = current_index - state[:columns]
-        find_placement_(state, next_index)
     end
   end
 end
