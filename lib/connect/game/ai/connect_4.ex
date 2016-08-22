@@ -1,8 +1,7 @@
 defmodule Connect.Game.Ai.Connect4 do
   def get_placement(game_state, ai_player) do
     empty_scores = List.duplicate(nil, game_state[:columns])
-    populated_scores = compute_move_scores(game_state, ai_player, 1, empty_scores)
-
+    populated_scores = compute_move_scores(game_state, ai_player, 3, empty_scores)
     index = case ai_player do
       1 ->
         max_score = Enum.max_by(populated_scores, fn(score) -> score || -100000 end)
@@ -14,9 +13,13 @@ defmodule Connect.Game.Ai.Connect4 do
     {:ok, index}
   end
 
-  def compute_move_scores(state, player, _depth, scores) do
+  def compute_move_scores(_state, _player, depth, scores) when depth == 0 do
+    scores
+  end
+
+  def compute_move_scores(state, player, depth, scores) do
     columns = 0..state[:columns]-1
-    column_scores = Enum.reduce(columns, scores, fn(column_to_place, scores) ->
+    Enum.reduce(columns, scores, fn(column_to_place, scores) ->
       case Connect.Game.ColumnPlacement.find_placement(state, column_to_place) do
         {:ok, place_index} ->
           next_board = List.replace_at(state[:board], place_index, player)
@@ -24,12 +27,14 @@ defmodule Connect.Game.Ai.Connect4 do
           score_modifier = if player == 1, do: 1000, else: -1000
           score_modifier = if has_win, do: score_modifier, else: div(score_modifier, 1000)
 
+          next_state = Map.merge(state, %{board: next_board})
+
           previous_score = Enum.at(scores, place_index) || 0
-          next_scores = List.replace_at(scores, column_to_place, previous_score + score_modifier)
-          next_scores
+          computed_scores = compute_move_scores(next_state, rem(player,2)+1, depth-1, List.duplicate(nil, Enum.count(scores)))
+          computed_sum = Enum.sum(Enum.map(computed_scores, &(&1 || 0)))
+          List.replace_at(scores, column_to_place, previous_score + score_modifier + computed_sum)
         {:error, _} -> scores
       end
     end)
-    column_scores
   end
 end
