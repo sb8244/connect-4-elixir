@@ -83,11 +83,7 @@ defmodule Connect.Game.WinCheck do
   defp group_into_columns(board, col_size) do
     board |>
       Enum.with_index |>
-      Enum.group_by(fn({_, i}) ->
-        rem(i, col_size)
-      end, fn({e, _}) ->
-        e
-      end) |>
+      Enum.group_by(fn({_, index}) -> rem(index, col_size) end, fn({e, _}) -> e end) |>
       Map.values
   end
 
