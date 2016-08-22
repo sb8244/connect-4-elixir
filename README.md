@@ -4,7 +4,8 @@ Fun little challenge to create connect 4 in elixir. Goals of it are:
 
 - [x] Playable Connect 4 via CLI
 - [x] Bonus: Playable Tic Tac Toe via ClI
-- [ ] Bonus: AI as player 2
+- [x] Bonus: AI as player 2 for connect 4
+- [ ] Bonus: AI as player 2 for tic tac toe
 - [ ] Bonus: Web interface for games
 
 This is a learning application for me in Elixir, so it probably is going to have
