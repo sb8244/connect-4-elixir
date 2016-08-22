@@ -81,14 +81,9 @@ defmodule Connect.Game.WinCheck do
   end
 
   defp group_into_columns(board, col_size) do
-    indices = 0..Enum.count(board)-1
-    collected = Enum.reduce(indices, %{}, fn(index, collected) ->
-      grouping = rem(index, col_size)
-      grouping_list = collected[grouping] || []
-      new_grouping_list = grouping_list ++ [Enum.at(board, index)]
-      Map.put(collected, grouping, new_grouping_list)
-    end)
-    Map.values(collected)
+    board |> Enum.with_index |> Enum.group_by(fn({_, index}) ->
+      rem(index, col_size)
+    end, fn({e, _}) -> e end) |> Map.values
   end
 
   defp group_into_diags(board, col_size) do
