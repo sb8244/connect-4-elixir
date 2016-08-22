@@ -60,7 +60,7 @@ defmodule Connect.Cli.Server do
     placement = cond do
       current_player == 2 && ai_module ->
         game_state = Connect.Game.Server.get_state(game)
-        {:ok, placement} = ai_module.get_placement(game_state, current_player)
+        {:ok, placement} = ai_module.get_placement(game_state)
         Integer.to_string(placement+1)
       true ->
         IO.puts "Which column (1-7) do you want to place?"
